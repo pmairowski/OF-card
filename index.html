@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DeRose Method</title>
+    <style>
+        /* --- CSS GERAL --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        
+        body { 
+            background-color: #1a1a1a; 
+            color: #fff; 
+            height: 100dvh; 
+            width: 100vw; 
+            overflow: hidden; 
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+        }
+
+        /* AVISO PAISAGEM */
+        #landscape-warning {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 9999; flex-direction: column; justify-content: center; align-items: center;
+        }
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            #landscape-warning { display: flex !important; }
+            #app { display: none !important; }
+        }
+
+        /* O APP */
+        #app { 
+            width: 100%; height: 100%; position: relative; 
+            background-color: #000; max-width: 480px; 
+            box-shadow: 0 0 40px rgba(0,0,0,0.5); 
+        }
+
+        /* TELAS */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: flex-end; 
+            padding: 20px 20px 40px 20px; 
+            background-size: cover; background-position: center;
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease;
+            opacity: 0; pointer-events: none; z-index: 1;
+            transform: scale(0.95);
+        }
+        .screen.active { opacity: 1; pointer-events: all; z-index: 10; transform: scale(1); }
+
+        /* FUNDOS */
+        #page-1 { background-image: url('foto-fundo.jpg'); } 
+        /* Ajustei o padding do Page-2 para caber tudo sem apertar */
+        #page-2 { background-color: #111; justify-content: flex-start; padding-top: 80px; }
+        #page-3 { background-color: #000; justify-content: flex-end; padding-bottom: 30px; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.9) 80%);
+            z-index: 1;
+        }
+
+        .content {
+            position: relative; z-index: 5; text-align: center;
+            display: flex; flex-direction: column; gap: 15px;
+            width: 100%; margin: 0 auto; 
+        }
+
+        /* --- GRID DE ÍCONES (SVGs) --- */
+        .icon-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .icon-circle {
+            width: 55px; height: 55px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 8px;
+            transition: transform 0.2s, background 0.2s;
+        }
+        
+        .action-item:hover .icon-circle { transform: scale(1.1); background: rgba(255,255,255,0.25); }
+        .custom-icon { width: 28px; height: 28px; fill: currentColor; }
+
+        .action-label {
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; opacity: 0.9; white-space: nowrap;
+        }
+
+        /* --- BOTÕES LARGOS --- */
+        .btn { 
+            display: flex; align-items: center; justify-content: center; 
+            width: 100%; padding: 18px; border-radius: 12px; 
+            text-decoration: none; font-weight: bold; font-size: 0.95rem; 
+            cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 1px;
+            transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary { background: #fff; color: #000; box-shadow: 0 4px 20px rgba(255,255,255,0.15); }
+        .btn-outline { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+
+        /* BOTÃO VOLTAR (EMBAIXO) */
+        .btn-back-bottom {
+            background: none; border: none; color: rgba(255,255,255,0.5); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; padding: 10px; margin-top: 5px; transition: color 0.3s;
+        }
+        .btn-back-bottom:hover { color: #fff; }
+
+        /* --- TABELA DE HORÁRIOS COM SCROLL --- */
+        .schedule-container {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: left;
+            
+            /* AQUI ESTÁ A MÁGICA DA ROLAGEM */
+            max-height: 55vh; /* Ocupa no máximo 55% da tela */
+            overflow-y: auto; /* Cria barra de rolagem se passar disso */
+            
+            /* Estilo da barra no Firefox */
+            scrollbar-width: thin; 
+            scrollbar-color: #dcb368 rgba(255,255,255,0.05);
+        }
+
+        /* Estilo da barra no Chrome/Safari */
+        .schedule-container::-webkit-scrollbar { width: 6px; }
+        .schedule-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px;}
+        .schedule-container::-webkit-scrollbar-thumb { background-color: #dcb368; border-radius: 20px; }
+
+        .schedule-day { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .schedule-day:last-child { border-bottom: none; margin-bottom: 0; }
+        .day-title { color: #dcb368; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .day-hours { font-size: 1.1rem; color: #fff; font-weight: 300; }
+
+        /* --- TIPOGRAFIA --- */
+        h1 { font-size: 1.6rem; line-height: 1.1; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        h2 { font-size: 0.85rem; color: #dcb368; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 20px;}
+        h3 { font-size: 1.4rem; font-weight: bold; text-transform: uppercase; color: #fff; margin-bottom: 10px; }
+
+        .tagline-tempo {
+            display: inline-block; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 10px;
+        }
+
+        .logo-area { position: absolute; top: 30px; left: 0; width: 100%; text-align: center; z-index: 20; pointer-events: none; }
+        .logo-text { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-weight: 600; opacity: 0.9; }
+        .video-container { width: auto; height: auto; max-height: 40vh; aspect-ratio: 9/16; background-color: #000; border-radius: 12px; border: 1px solid #333; overflow: hidden; margin: 0 auto 15px auto; position: relative; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body>
+
+    <div id="landscape-warning" style="color:white; text-align:center;">
+        <h3>📱 Gire seu celular</h3>
+    </div>
+
+    <div id="app">
+        <div class="logo-area">
+            <span class="logo-text">DeRose Method</span>
+        </div>
+
+        <div id="page-1" class="screen active">
+            <div class="overlay"></div>
+            <div class="content">
+                
+                <h1>O treinamento mais ancestral do mundo</h1>
+                <h2>Tônus muscular | Flexibilidade | Mindfulness</h2>
+                <div><span class="tagline-tempo">⏱ Tudo em 1h de treino</span></div>
+
+                <div class="icon-actions">
+                    <a href="https://api.whatsapp.com/send?phone=5511921800523&text=Ol%C3%A1,%20gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20a%20escola." class="action-item">
+                        <div class="icon-circle">
+                            <svg class="custom-icon" viewBox="0 0 24 24" style="color:#25D366;">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                            </svg>
+                        </div>
+                        <span class="action-label">Informações</span>
+                    </a>
+
+                    <a href="https://instagram.com/deroseoscarfreire" target="_blank" class="action-item">
+                        <div class="icon-circle">
+                            <svg class="custom-icon" viewBox="0 0 24 24" style="color:#E1306C;">
+                                <path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" />
+                            </svg>
+                        </div>
+                        <span class="action-label">Lifestyle</span>
+                    </a>
+
+                    <a href="contato.vcf" class="action-item">
+                        <div class="icon-circle">
+                            <svg class="custom-icon" viewBox="0 0 24 24" style="color:#dcb368;">
+                                <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                        <span class="action-label">Salvar Contato</span>
+                    </a>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                    <button id="nav-to-grade" class="btn btn-primary">
+                        📅 VER GRADE HORÁRIA
+                    </button>
+                    <button id="nav-to-video" class="btn btn-outline">
+                        COMO SÃO AS AULAS? ▶
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="page-2" class="screen">
+            
+            <div class="content" style="justify-content: flex-start;">
+                <h3>Treinamentos da Semana</h3>
+                <p style="font-size: 0.9rem; color:#ccc; margin-bottom:10px;">Aulas presenciais e online</p>
+
+                <div class="schedule-container">
+                    
+                    <div class="schedule-day">
+                        <div class="day-title">Iniciantes</div>
+                        <div class="day-hours">SEG/QUA • 19h</div>
+			<div class="day-hours">TER/QUI • 7:15h • 18h</div>
+		    </div>
+
+                    <div class="schedule-day">
+                        <div class="day-title">Intermediários</div>
+                        <div class="day-hours">SEG • 20h</div>
+			<div class="day-hours">TER/QUI • 19h</div>
+			<div class="day-hours">QUA • 7:15h • 20h</div>
+		    </div>
+
+                    <div class="schedule-day">
+                        <div class="day-title">Flexibilidade</div>
+                        <div class="day-hours">SEG • 18h</div>
+                    </div>
+                    
+                    <div class="schedule-day">
+                        <div class="day-title">Força</div>
+                        <div class="day-hours">QUA • 18h</div>
+                    </div>
+		
+		    <div class="schedule-day">
+                        <div class="day-title">Ásana Power Training</div>
+                        <div class="day-hours">QUI • 20h - (flex - força - respiração)</div>
+                    </div>
+
+		    <div class="schedule-day">
+                        <div class="day-title">Treino Livre</div>
+                        <div class="day-hours">SEX • 18h</div>
+			<div class="day-hours">SAB • 10h</div>
+                    </div>
+
+                </div>
+
+                <a href="https://api.whatsapp.com/send?phone=5511921800523&text=Gostaria%20de%20agendar%20uma%20aula%20experimental." class="btn btn-primary" style="margin-top: 10px;">
+                    AGENDAR EXPERIMENTAL
+                </a>
+                
+                <button class="btn-back-bottom go-home">◀ Voltar para o Início</button>
+            </div>
+        </div>
+
+
+        <div id="page-3" class="screen">
+            
+            <div class="content">
+                <h3>A Metodologia</h3>
+                
+                <div class="video-container">
+                    <video controls poster="capa-video.jpg" playsinline>
+                        <source src="video.mp4" type="video/mp4">
+                    </video>
+                </div>
+
+                <ul style="list-style:none; text-align:left; color:#ccc; font-size:0.9rem; margin:0 auto;">
+                    <li style="margin-bottom:5px;">⚡ Tônus e Definição</li>
+                    <li style="margin-bottom:5px;">⚡ Gestão Emocional</li>
+                    <li style="margin-bottom:5px;">⚡ Alta Performance</li>
+                </ul>
+
+                <a href="https://api.whatsapp.com/send?phone=5511921800523&text=Assisti%20o%20v%C3%ADdeo%20e%20quero%20come%C3%A7ar." class="btn btn-primary" style="background-color: #25D366; color:white; border:none; margin-top:10px;">
+                    QUERO ME MATRICULAR
+                </a>
+
+                <button class="btn-back-bottom go-home">◀ Voltar para o Início</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const home = document.getElementById('page-1');
+            const grade = document.getElementById('page-2');
+            const video = document.getElementById('page-3');
+
+            const btnGrade = document.getElementById('nav-to-grade');
+            const btnVideo = document.getElementById('nav-to-video');
+            const backButtons = document.querySelectorAll('.go-home');
+
+            function switchScreen(targetScreen) {
+                [home, grade, video].forEach(s => s.classList.remove('active'));
+                targetScreen.classList.add('active');
+            }
+
+            btnGrade.addEventListener('click', () => switchScreen(grade));
+            btnVideo.addEventListener('click', () => switchScreen(video));
+
+            backButtons.forEach(btn => {
+                btn.addEventListener('click', () => switchScreen(home));
+            });
+        });
+    </script>
+</body>
+</html>
