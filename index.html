@@ -50,8 +50,7 @@
 
         /* FUNDOS */
         #page-1 { background-image: url('foto-fundo.jpg'); } 
-        /* AJUSTE: Reduzi padding-top para sobrar espaço embaixo */
-        #page-2 { background-color: #111; justify-content: flex-start; padding-top: 60px; }
+        #page-2 { background-color: #111; justify-content: flex-start; padding-top: 90px; }
         #page-3 { background-color: #000; justify-content: flex-end; padding-bottom: 30px; }
 
         .overlay {
@@ -68,38 +67,20 @@
 
         /* --- GRID DE ÍCONES (SVGs) --- */
         .icon-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;
         }
-
-        .action-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: #fff;
-            cursor: pointer;
-        }
-
+        .action-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #fff; cursor: pointer; }
+        
         .icon-circle {
             width: 55px; height: 55px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            margin-bottom: 8px;
-            transition: transform 0.2s, background 0.2s;
+            margin-bottom: 8px; transition: transform 0.2s, background 0.2s;
         }
-        
         .action-item:hover .icon-circle { transform: scale(1.1); background: rgba(255,255,255,0.25); }
         .custom-icon { width: 28px; height: 28px; fill: currentColor; }
-
-        .action-label {
-            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; opacity: 0.9; white-space: nowrap;
-        }
+        .action-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; opacity: 0.9; white-space: nowrap; }
 
         /* --- BOTÕES LARGOS --- */
         .btn { 
@@ -110,7 +91,6 @@
             transition: transform 0.2s;
         }
         .btn:active { transform: scale(0.98); }
-
         .btn-primary { background: #fff; color: #000; box-shadow: 0 4px 20px rgba(255,255,255,0.15); }
         .btn-outline { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
 
@@ -122,20 +102,15 @@
 
         /* --- TABELA DE HORÁRIOS COM SCROLL --- */
         .schedule-container {
-            width: 100%;
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: left;
+            width: 100%; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; text-align: left;
             
-            /* AJUSTE: Reduzi para 45vh para garantir que o botão embaixo apareça */
+            /* AJUSTE SCROLL */
             max-height: 45vh; 
-            overflow-y: auto;
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; /* Rolagem suave no iPhone */
             
-            scrollbar-width: thin; 
-            scrollbar-color: #dcb368 rgba(255,255,255,0.05);
+            scrollbar-width: thin; scrollbar-color: #dcb368 rgba(255,255,255,0.05);
         }
-
         .schedule-container::-webkit-scrollbar { width: 6px; }
         .schedule-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px;}
         .schedule-container::-webkit-scrollbar-thumb { background-color: #dcb368; border-radius: 20px; }
@@ -147,16 +122,37 @@
 
         /* --- TIPOGRAFIA --- */
         h1 { font-size: 1.6rem; line-height: 1.1; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
-        h2 { font-size: 0.85rem; color: #dcb368; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 20px;}
+        
+        /* APROXIMAÇÃO DO TÍTULO E TAG */
+        h2 { font-size: 0.85rem; color: #dcb368; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;} /* Reduzi margem de 20 para 8px */
+
         h3 { font-size: 1.4rem; font-weight: bold; text-transform: uppercase; color: #fff; margin-bottom: 10px; }
 
         .tagline-tempo {
             display: inline-block; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 10px;
         }
 
-        .logo-area { position: absolute; top: 30px; left: 0; width: 100%; text-align: center; z-index: 20; pointer-events: none; }
-        .logo-text { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-weight: 600; opacity: 0.9; }
-        .video-container { width: auto; height: auto; max-height: 40vh; aspect-ratio: 9/16; background-color: #000; border-radius: 12px; border: 1px solid #333; overflow: hidden; margin: 0 auto 15px auto; position: relative; }
+        /* --- LOGO TOPO COM CÁPSULA (NOVO) --- */
+        .logo-area { 
+            position: absolute; top: 30px; left: 0; width: 100%; 
+            display: flex; justify-content: center; /* Centraliza a cápsula */
+            z-index: 20; pointer-events: none; 
+        }
+        .logo-text { 
+            font-size: 0.65rem; /* Ajuste fino */
+            letter-spacing: 2px; text-transform: uppercase; color: #fff; font-weight: 700; 
+            
+            /* Estilo de Botão/Cápsula */
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        /* AUMENTO DO VÍDEO PARA 50vh */
+        .video-container { width: auto; height: auto; max-height: 50vh; aspect-ratio: 9/16; background-color: #000; border-radius: 12px; border: 1px solid #333; overflow: hidden; margin: 0 auto 15px auto; position: relative; }
         video { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
@@ -176,10 +172,13 @@
             <div class="content">
                 
                 <h1>O treinamento mais ancestral do mundo</h1>
-                <h2>Tônus muscular | Flexibilidade | Mindfulness</h2>
-                <div><span class="tagline-tempo">⏱ Tudo em 1h de treino</span></div>
+                
+                <div>
+                    <h2>Tônus muscular | Flexibilidade | Mindfulness</h2>
+                    <span class="tagline-tempo">⏱ Tudo em 1h de treino</span>
+                </div>
 
-                <div class="icon-actions">
+                <div class="icon-actions" style="margin-top: 15px;">
                     <a href="https://api.whatsapp.com/send?phone=5511980145483&text=Ol%C3%A1,%20gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20a%20escola." class="action-item">
                         <div class="icon-circle">
                             <svg class="custom-icon" viewBox="0 0 24 24" style="color:#25D366;">
@@ -270,7 +269,7 @@
                 </div>
 
                 <ul style="list-style:none; text-align:left; color:#ccc; font-size:0.9rem; margin:0 auto;">
-                    <li style="margin-bottom:5px;">⚡ Tônus e Definição</li>
+                    <li style="margin-bottom:5px;">⚡ Inteligência Corporal</li>
                     <li style="margin-bottom:5px;">⚡ Gestão Emocional</li>
                     <li style="margin-bottom:5px;">⚡ Alta Performance</li>
                 </ul>
